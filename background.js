@@ -6,7 +6,22 @@ function delayRequest(details) {
         return new Promise((resolve) => {
           setTimeout(() => {
             console.log(`Proceeding request to: ${details.url}`);
-            resolve({ cancel: false });
+            browser.webRequest.onCompleted.addListener(
+              (responseDetails) => {
+                const modifiedBody = rule.overwriteResponseBody || responseDetails.response.body;
+                const modifiedStatusCode = rule.overwriteStatusCode || responseDetails.statusCode;
+                const modifiedResponse = {
+                  statusCode: modifiedStatusCode,
+                  headers: responseDetails.responseHeaders,
+                  body: modifiedBody
+                };
+                browser.webRequest.onCompleted.removeListener(this);
+                console.log(`Modified response for ${rule.urlPattern}:`, modifiedResponse);
+                resolve({ cancel: false });
+              },
+              { urls: [details.url] },
+              ["response"]
+            );
           }, rule.delayTime);
         });
       }
@@ -16,7 +31,7 @@ function delayRequest(details) {
 }
 
 browser.webRequest.onBeforeRequest.addListener(
-    delayRequest,
-    {urls: ["<all_urls>"]},
-    ["blocking"]
+  delayRequest,
+  {urls: ["<all_urls>"]},
+  ["blocking"]
 );
