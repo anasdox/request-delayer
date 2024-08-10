@@ -22,6 +22,6 @@
         "default_title": "Request Delayer"
     },
     "icons": {
-        "48": "icon.png"
+        "32": "icon.png"
     }
 }
